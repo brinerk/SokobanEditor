@@ -7,8 +7,13 @@ const int WIDTH = 800;
 const int HEIGHT = 600;
 
 #define MAX_TILES 4096
+#define MAX_ENTS 64
 
 int ActiveColor = 0;
+
+bool player = false;
+
+bool Layer = false;
 
 typedef struct Tile {
 
@@ -19,7 +24,15 @@ typedef struct Tile {
 
 } Tile;
 
+typedef struct Ent {
+	bool active;
+	bool player;
+	Vector2 position;
+	Color color;
+} Ent;
+
 Tile _tiles[MAX_TILES] = {0};
+Ent _ents[MAX_ENTS] = {0};
 
 int _output[64][64] = {0};
 
@@ -29,6 +42,15 @@ Tile CreateTile(Vector2 position, int flag, Color color) {
 		.active = true,
 		.position = position,
 		.flag = flag,
+		.color = color,
+	};
+}
+
+Ent CreateEnt(Vector2 position, bool player, Color color) {
+	return (Ent) {
+		.active = true,
+		.position = position,
+		.player = player,
 		.color = color,
 	};
 }
@@ -54,8 +76,6 @@ int main(void) {
 	camera.target.x = 0;
 	camera.target.y = 0;
 	camera.zoom = 1.0f;
-	
-	printf("%f\n", camera.target.x);
 
 	while(!WindowShouldClose()) {
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
@@ -92,6 +112,13 @@ int main(void) {
 					DrawRectangle(_tiles[i].position.x, _tiles[i].position.y, 50, 50, _tiles[i].color);
 				}
 
+				for (int j = 0; j < MAX_ENTS; j++) {
+					if(!_ents[j].active) {
+						continue;
+					}
+					DrawCircle(_ents[j].position.x + 25, _ents[j].position.y + 25, 25, _ents[j].color);
+				}
+
 				rlPushMatrix();
 					rlTranslatef(0, 25*50,0);
 					rlRotatef(90,1,0,0);
@@ -110,6 +137,10 @@ int main(void) {
 		}
 		if(IsKeyPressed(KEY_TWO)) {
 			ActiveColor = 2;
+		}
+
+		if(IsKeyPressed(KEY_P)) {
+			player = !player;
 		}
 
 		if(IsKeyPressed(KEY_S)) {
@@ -131,51 +162,117 @@ int main(void) {
 					fprintf(fptr,"%d", w);
 				}
 			}
-		//	fclose(fptr);
+			fclose(fptr);
+		}
+
+		if(IsKeyPressed(KEY_E)) {
+			Layer = false;
+		}
+
+		if(IsKeyPressed(KEY_T)) {
+			Layer = true;
 		}
 
 
+		//Tile placing code
 		if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 
-			int camx = (int)camera.target.x;
-			int camy = (int)camera.target.y;
-			int _x = (int)GetMousePosition().x + camx;
-			int _y = (int)GetMousePosition().y + camy;
-			int _width = (int)(50 * camera.zoom);
-			int _height = (int)(50 * camera.zoom);
+			if(Layer) {
 
-			Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
+				int camx = (int)camera.target.x;
+				int camy = (int)camera.target.y;
+				int _x = (int)GetMousePosition().x + camx;
+				int _y = (int)GetMousePosition().y + camy;
+				int _width = (int)(50 * camera.zoom);
+				int _height = (int)(50 * camera.zoom);
 
-			Color _color;
-			bool _flag;
+				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
 
-			switch(ActiveColor) {
-				case 0:
-					_color = BLACK;
-					_flag = 0;
+				Color _color;
+				bool _flag;
+
+				switch(ActiveColor) {
+					case 0:
+						_color = BLACK;
+						_flag = 0;
+						break;
+					case 1:
+						_color = GREEN;
+						_flag = 1;
+						break;
+					case 2:
+						_color = RED;
+						_flag = 2;
+						break;
+				}
+
+				Tile tile = CreateTile(AdjustedPos, _flag, _color);
+
+				for(int i = 0; i < MAX_TILES; i++) {
+					if(_tiles[i].active) {
+						continue;
+					}
+					_tiles[i] = tile;
 					break;
-				case 1:
-					_color = GREEN;
-					_flag = 1;
-					break;
-				case 2:
-					_color = RED;
-					_flag = 2;
-					break;
+				}
 			}
 
+			else {
+				int camx = (int)camera.target.x;
+				int camy = (int)camera.target.y;
+				int _x = (int)GetMousePosition().x + camx;
+				int _y = (int)GetMousePosition().y + camy;
+				int _width = (int)(50 * camera.zoom);
+				int _height = (int)(50 * camera.zoom);
 
-			Tile tile = CreateTile(AdjustedPos, _flag, _color);
+				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
 
-			for(int j = 0; j < MAX_TILES; j++) {
-				if(_tiles[j].active) {
-					continue;
+				printf("THIS ONE WORKS");
+
+				Color _color;
+				bool _flag;
+
+				switch(ActiveColor) {
+					case 0:
+						_color = BLACK;
+						_flag = 0;
+						break;
+					case 1:
+						_color = GREEN;
+						_flag = 1;
+						break;
+					case 2:
+						_color = RED;
+						_flag = 2;
+						break;
 				}
-				_tiles[j] = tile;
-				break;
+
+				Color color;
+				bool _player;
+
+				if(player){
+					_player = true;
+					color = BLUE;
+				}
+
+				else {
+					_player = false;
+					color = BROWN;
+				}
+
+
+				Ent ent = CreateEnt(AdjustedPos, player, color);
+
+				for(int i = 0; i < MAX_ENTS; i++) {
+					if(_ents[i].active) {
+						continue;
+					}
+					_ents[i] = ent;
+					break;
+				}
 			}
 		}
-	} 
+	}
 
 	CloseWindow();
 	return 0;
