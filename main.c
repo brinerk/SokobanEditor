@@ -11,7 +11,7 @@ const int HEIGHT = 600;
 
 int ActiveColor = 0;
 
-bool player = false;
+int player = 1;
 
 bool Layer = false;
 
@@ -25,10 +25,12 @@ typedef struct Tile {
 } Tile;
 
 typedef struct Ent {
+
 	bool active;
-	bool player;
+	int player;
 	Vector2 position;
 	Color color;
+
 } Ent;
 
 Tile _tiles[MAX_TILES] = {0};
@@ -46,7 +48,7 @@ Tile CreateTile(Vector2 position, int flag, Color color) {
 	};
 }
 
-Ent CreateEnt(Vector2 position, bool player, Color color) {
+Ent CreateEnt(Vector2 position, int player, Color color) {
 	return (Ent) {
 		.active = true,
 		.position = position,
@@ -55,21 +57,10 @@ Ent CreateEnt(Vector2 position, bool player, Color color) {
 	};
 }
 
-int clearAll(void) {
-	for(int i = 0; i<63; i++){
-		for(int j = 0; j<63; j++){
-			CreateTile((Vector2){i*50,j*50}, 0, BLACK);
-		}
-	}
-	return 0;
-}
-
 int main(void) {
 
 	InitWindow(WIDTH, HEIGHT, "Editor");
 
-//	clearAll();
-	
 	SetExitKey(KEY_Q);
 
 	Camera2D camera = {0};
@@ -84,21 +75,6 @@ int main(void) {
 			camera.target = Vector2Add(camera.target, delta);
 			camera.target = Vector2Clamp(camera.target, (Vector2){0,0}, (Vector2){4096,4096});
 		}
-
-/*		float wheel = GetMouseWheelMove();
-		if(wheel !=0 ) {
-			Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
-
-			camera.offset = GetMousePosition();
-
-			camera.target = mouseWorldPos;
-
-			const float zoomIncrement = 0.125f;
-
-			camera.zoom += (wheel*zoomIncrement);
-			if (camera.zoom < zoomIncrement) camera.zoom = zoomIncrement;
-		}
-*/
 
 		BeginDrawing();
 			ClearBackground(BLACK);
@@ -140,7 +116,10 @@ int main(void) {
 		}
 
 		if(IsKeyPressed(KEY_P)) {
-			player = !player;
+			player = 1;
+		}
+		if(IsKeyPressed(KEY_B)) {
+			player = 2;
 		}
 
 		if(IsKeyPressed(KEY_S)) {
@@ -151,15 +130,16 @@ int main(void) {
 			for(int t = 0; t<MAX_TILES;t++){
 				Vector2 p = _tiles[t].position;
 				int f = _tiles[t].flag;
-				if(p.x != 0){
+				if(f != 0){
+					fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
 				}
-				_output[(int)(p.x/50)][(int)(p.y/50)] = f;
 			}
-
-			for(int o = 0; o < 63; o++){
-				for(int O = 0; O < 63; O++){
-					int w = _output[o][O];
-					fprintf(fptr,"%d", w);
+			fprintf(fptr, "ENTITIES\n");
+			for(int t = 0; t<MAX_ENTS;t++){
+				Vector2 p = _ents[t].position;
+				int f = _ents[t].player;
+				if(f != 0){
+					fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
 				}
 			}
 			fclose(fptr);
@@ -189,7 +169,7 @@ int main(void) {
 				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
 
 				Color _color;
-				bool _flag;
+				int _flag;
 
 				switch(ActiveColor) {
 					case 0:
@@ -213,6 +193,7 @@ int main(void) {
 						continue;
 					}
 					_tiles[i] = tile;
+					printf("%d",_tiles[i].flag);
 					break;
 				}
 			}
@@ -227,37 +208,19 @@ int main(void) {
 
 				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
 
-				printf("THIS ONE WORKS");
+				Color color;
 
-				Color _color;
-				bool _flag;
+				int _player;
 
-				switch(ActiveColor) {
-					case 0:
-						_color = BLACK;
-						_flag = 0;
-						break;
+				switch(player){
 					case 1:
-						_color = GREEN;
-						_flag = 1;
+						_player = 1;
+						color = BLUE;
 						break;
 					case 2:
-						_color = RED;
-						_flag = 2;
-						break;
-				}
-
-				Color color;
-				bool _player;
-
-				if(player){
-					_player = true;
-					color = BLUE;
-				}
-
-				else {
-					_player = false;
+					_player = 2;
 					color = BROWN;
+					break;
 				}
 
 
