@@ -139,7 +139,12 @@ int main(void) {
 				Vector2 p = _ents[t].position;
 				int f = _ents[t].player;
 				if(f != 0){
-					fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
+					if(f == 1){
+						fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
+					}
+					else { 
+						fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f+t-1);
+					}
 				}
 			}
 			fclose(fptr);
