@@ -3,7 +3,9 @@ A simple editor made using raylib for our Sokoban style game.
 Provides a graphical interface to generate plain text grids.
 
 ## Controls:
-Click to place tiles or entities, starts in entity mode with player entity selected.
+Left click to place tiles or entities, starts in entity mode with player entity selected.
+
+Hold right click and drag to pan the view.
 
 Be careful, mistakes cannot be undone, and do not try to replace a tile or entity, it will just place them both.
 
