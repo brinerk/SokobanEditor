@@ -2,7 +2,7 @@ A simple editor made using raylib for our Sokoban style game.
 
 Provides a graphical interface to generate plain text grids.
 
-# Controls:
+## Controls:
 Click to place tiles or entities, starts in entity mode with player entity selected.
 
 Be careful, mistakes cannot be undone, and do not try to replace a tile or entity, it will just place them both.
@@ -17,7 +17,7 @@ Be careful, mistakes cannot be undone, and do not try to replace a tile or entit
 
 `s` generates map file named map in directory
 
-# Windows Build Instructions:
+## Windows Build Instructions:
 Using tcc compiler
 
 Drop in raylib lib and include into tcc dir
