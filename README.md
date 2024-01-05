@@ -7,13 +7,13 @@ Click to place tiles or entities, starts in entity mode with player entity selec
 
 Be careful, mistakes cannot be undone, and do not try to replace a tile or entity, it will just place them both.
 
-`t` for tile mode
-`1` to select green floor tiles
-`2` to select red goal tiles
+`t` tile mode
+`1` select green floor tiles
+`2` select red goal tiles
 
-`e` for entity mode
-`p` to select player entity
-`b` to select box entity
+`e` entity mode
+`p` select player entity
+`b` select box entity
 
 `s` generates map file named map in directory
 
