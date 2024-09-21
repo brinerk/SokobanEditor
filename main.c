@@ -2,6 +2,7 @@
 #include<raymath.h>
 #include<rlgl.h>
 #include<stdio.h>
+#include<string.h>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -14,6 +15,8 @@ int ActiveColor = 0;
 int player = 1;
 
 bool Layer = false;
+
+char layerString[20]; 
 
 typedef struct Tile {
 
@@ -69,6 +72,23 @@ int main(void) {
 	camera.zoom = 1.0f;
 
 	while(!WindowShouldClose()) {
+
+		Color _color;
+
+		int camx = (int)camera.target.x;
+		int camy = (int)camera.target.y;
+		int _x = (int)GetMousePosition().x + camx;
+		int _y = (int)GetMousePosition().y + camy;
+		int _width = (int)(50 * camera.zoom);
+		int _height = (int)(50 * camera.zoom);
+
+		Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
+
+		if(Layer) {
+			strcpy(layerString, "Tiles");
+		} else {
+			strcpy(layerString, "Entities");
+		}
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
 			Vector2 delta = GetMouseDelta();
 			delta = Vector2Scale(delta, -1.0f/camera.zoom);
@@ -80,6 +100,11 @@ int main(void) {
 			ClearBackground(BLACK);
 
 			BeginMode2D(camera);
+				if(Layer) {
+					DrawRectangle(AdjustedPos.x, AdjustedPos.y, 50, 50, _color);
+				} else {
+					DrawCircle(AdjustedPos.x + 25, AdjustedPos.y + 25, 25, _color);
+				}
 
 				for (int i = 0; i < MAX_TILES; i++) {
 					if(!_tiles[i].active) {
@@ -102,24 +127,35 @@ int main(void) {
 				rlPopMatrix();
 
 			EndMode2D();
-			DrawFPS(0, 0);
+			DrawText(TextFormat("Layer: %s", layerString), 0, 0, 24, WHITE);
 		EndDrawing();
 
-		if(IsKeyPressed(KEY_ZERO)) {
-			ActiveColor = 0;
-		}
-		if(IsKeyPressed(KEY_ONE)) {
-			ActiveColor = 1;
-		}
-		if(IsKeyPressed(KEY_TWO)) {
-			ActiveColor = 2;
-		}
-
-		if(IsKeyPressed(KEY_P)) {
-			player = 1;
-		}
-		if(IsKeyPressed(KEY_B)) {
-			player = 2;
+		if(Layer) {
+			if(IsKeyPressed(KEY_ZERO)) {
+				ActiveColor = 0;
+				_color = BLACK;
+			}
+			if(IsKeyPressed(KEY_ONE)) {
+				ActiveColor = 1;
+				_color = GREEN;
+			}
+			if(IsKeyPressed(KEY_TWO)) {
+				ActiveColor = 2;
+				_color = RED;
+			}
+		} else {
+			if(IsKeyPressed(KEY_D)) {
+				player = 0;
+				_color = BLACK;
+			}
+			if(IsKeyPressed(KEY_P)) {
+				player = 1;
+				_color = BLUE;
+			}
+			if(IsKeyPressed(KEY_B)) {
+				player = 2;
+				_color = BROWN;
+			}
 		}
 
 		if(IsKeyPressed(KEY_S)) {
@@ -160,22 +196,15 @@ int main(void) {
 
 
 		//Tile placing code
+		//TODO make sure no overlaps
 		if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 
 			if(Layer) {
 
-				int camx = (int)camera.target.x;
-				int camy = (int)camera.target.y;
-				int _x = (int)GetMousePosition().x + camx;
-				int _y = (int)GetMousePosition().y + camy;
-				int _width = (int)(50 * camera.zoom);
-				int _height = (int)(50 * camera.zoom);
-
-				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
-
-				Color _color;
 				int _flag;
+				
 
+				//TODO I can switch out these switches for just an array
 				switch(ActiveColor) {
 					case 0:
 						_color = BLACK;
@@ -191,6 +220,7 @@ int main(void) {
 						break;
 				}
 
+				//delete tiles
 				if(ActiveColor == 0) {
 					for(int i = 0; i < MAX_TILES; i++) {
 						if(_tiles[i].position.x == AdjustedPos.x && _tiles[i].position.y == AdjustedPos.y) {
@@ -199,6 +229,8 @@ int main(void) {
 					}
 				}
 
+
+				//TODO we don't need to make a tile if color is 0
 				Tile tile = CreateTile(AdjustedPos, _flag, _color);
 
 				for(int i = 0; i < MAX_TILES; i++) {
@@ -212,32 +244,33 @@ int main(void) {
 			}
 
 			else {
-				int camx = (int)camera.target.x;
-				int camy = (int)camera.target.y;
-				int _x = (int)GetMousePosition().x + camx;
-				int _y = (int)GetMousePosition().y + camy;
-				int _width = (int)(50 * camera.zoom);
-				int _height = (int)(50 * camera.zoom);
-
-				Vector2 AdjustedPos = {_x - (_x %_width), _y - (_y % _height)};
-
-				Color color;
 
 				int _player;
 
 				switch(player){
+					case 0:
+						_player = 0;
+						_color = BLACK;
+						break;
 					case 1:
 						_player = 1;
-						color = BLUE;
+						_color = BLUE;
 						break;
 					case 2:
-					_player = 2;
-					color = BROWN;
-					break;
+						_player = 2;
+						_color = BROWN;
+						break;
 				}
 
+				if(player == 0) {
+					for(int i = 0; i < MAX_ENTS; i++) {
+						if(_ents[i].position.x == AdjustedPos.x && _ents[i].position.y == AdjustedPos.y) {
+							_ents[i].active = false;
+						}
+					}
+				}
 
-				Ent ent = CreateEnt(AdjustedPos, player, color);
+				Ent ent = CreateEnt(AdjustedPos, player, _color);
 
 				for(int i = 0; i < MAX_ENTS; i++) {
 					if(_ents[i].active) {
