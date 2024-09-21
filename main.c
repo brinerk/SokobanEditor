@@ -18,6 +18,8 @@ bool Layer = false;
 
 char layerString[20]; 
 
+Color colors[] = {BLACK,GREEN,RED,BLUE,BROWN};
+
 typedef struct Tile {
 
 	bool active;
@@ -101,9 +103,9 @@ int main(void) {
 
 			BeginMode2D(camera);
 				if(Layer) {
-					DrawRectangle(AdjustedPos.x, AdjustedPos.y, 50, 50, _color);
+					DrawRectangle(AdjustedPos.x, AdjustedPos.y, 50, 50, colors[ActiveColor]);
 				} else {
-					DrawCircle(AdjustedPos.x + 25, AdjustedPos.y + 25, 25, _color);
+					DrawCircle(AdjustedPos.x + 25, AdjustedPos.y + 25, 25, colors[player+2]);
 				}
 
 				for (int i = 0; i < MAX_TILES; i++) {
@@ -133,28 +135,22 @@ int main(void) {
 		if(Layer) {
 			if(IsKeyPressed(KEY_ZERO)) {
 				ActiveColor = 0;
-				_color = BLACK;
 			}
 			if(IsKeyPressed(KEY_ONE)) {
 				ActiveColor = 1;
-				_color = GREEN;
 			}
 			if(IsKeyPressed(KEY_TWO)) {
 				ActiveColor = 2;
-				_color = RED;
 			}
 		} else {
 			if(IsKeyPressed(KEY_D)) {
 				player = 0;
-				_color = BLACK;
 			}
 			if(IsKeyPressed(KEY_P)) {
 				player = 1;
-				_color = BLUE;
 			}
 			if(IsKeyPressed(KEY_B)) {
 				player = 2;
-				_color = BROWN;
 			}
 		}
 
@@ -203,23 +199,6 @@ int main(void) {
 
 				int _flag;
 				
-
-				//TODO I can switch out these switches for just an array
-				switch(ActiveColor) {
-					case 0:
-						_color = BLACK;
-						_flag = 0;
-						break;
-					case 1:
-						_color = GREEN;
-						_flag = 1;
-						break;
-					case 2:
-						_color = RED;
-						_flag = 2;
-						break;
-				}
-
 				//delete tiles
 				if(ActiveColor == 0) {
 					for(int i = 0; i < MAX_TILES; i++) {
@@ -229,9 +208,11 @@ int main(void) {
 					}
 				}
 
+				Tile tile;
 
-				//TODO we don't need to make a tile if color is 0
-				Tile tile = CreateTile(AdjustedPos, _flag, _color);
+				if(ActiveColor!=0) {
+					tile = CreateTile(AdjustedPos, ActiveColor, colors[ActiveColor]);
+				}
 
 				for(int i = 0; i < MAX_TILES; i++) {
 					if(_tiles[i].active) {
@@ -247,21 +228,8 @@ int main(void) {
 
 				int _player;
 
-				switch(player){
-					case 0:
-						_player = 0;
-						_color = BLACK;
-						break;
-					case 1:
-						_player = 1;
-						_color = BLUE;
-						break;
-					case 2:
-						_player = 2;
-						_color = BROWN;
-						break;
-				}
 
+				//delte entities
 				if(player == 0) {
 					for(int i = 0; i < MAX_ENTS; i++) {
 						if(_ents[i].position.x == AdjustedPos.x && _ents[i].position.y == AdjustedPos.y) {
@@ -270,7 +238,10 @@ int main(void) {
 					}
 				}
 
-				Ent ent = CreateEnt(AdjustedPos, player, _color);
+				Ent ent;
+				if(player!=0) {
+					ent = CreateEnt(AdjustedPos, player, colors[player+2]);
+				}
 
 				for(int i = 0; i < MAX_ENTS; i++) {
 					if(_ents[i].active) {
