@@ -2,3 +2,4 @@ map
 map*
 bin/
 Makefile
+*.swp
