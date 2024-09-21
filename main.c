@@ -191,6 +191,14 @@ int main(void) {
 						break;
 				}
 
+				if(ActiveColor == 0) {
+					for(int i = 0; i < MAX_TILES; i++) {
+						if(_tiles[i].position.x == AdjustedPos.x && _tiles[i].position.y == AdjustedPos.y) {
+							_tiles[i].active = false;
+						}
+					}
+				}
+
 				Tile tile = CreateTile(AdjustedPos, _flag, _color);
 
 				for(int i = 0; i < MAX_TILES; i++) {
