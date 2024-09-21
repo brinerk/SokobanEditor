@@ -3,3 +3,4 @@ map*
 bin/
 Makefile
 *.swp
+raygui.h

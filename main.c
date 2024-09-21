@@ -3,6 +3,8 @@
 #include<rlgl.h>
 #include<stdio.h>
 #include<string.h>
+#define RAYGUI_IMPLEMENTATION
+#include "../raygui-4.0/src/raygui.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -10,11 +12,6 @@ const int HEIGHT = 600;
 #define MAX_TILES 4096
 #define MAX_ENTS 64
 
-int ActiveColor = 0;
-
-int player = 1;
-
-bool Layer = false;
 
 char layerString[20]; 
 
@@ -62,7 +59,50 @@ Ent CreateEnt(Vector2 position, int player, Color color) {
 	};
 }
 
+void saveFile() {
+	FILE *fptr;
+
+	fptr = fopen("map", "w");
+
+	for(int t = 0; t<MAX_TILES;t++){
+		Vector2 p = _tiles[t].position;
+		int f = _tiles[t].flag;
+		if(f != 0){
+			fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
+		}
+	}
+
+	fprintf(fptr, "ENTITIES\n");
+	for(int t = 0; t<MAX_ENTS;t++){
+		Vector2 p = _ents[t].position;
+		int f = _ents[t].player;
+		if(f != 0){
+			if(f == 1){
+				fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
+			}
+			else { 
+				fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f+t-1);
+			}
+		}
+	}
+	fclose(fptr);
+}
+
+//TODO Make it so you can't click through the GUI
+
 int main(void) {
+
+	int ActiveColor = 0;
+	int player = 1;
+
+	bool Layer = false;
+
+	int ItemListScrollIndex = 0;
+	int ItemListActive = 0;
+	bool LayerButtonPressed = false;
+	bool SaveButtonPressed = false;
+	bool QuitButtonPressed = false;
+	bool shouldClose = false;
 
 	InitWindow(WIDTH, HEIGHT, "Editor");
 
@@ -74,8 +114,6 @@ int main(void) {
 	camera.zoom = 1.0f;
 
 	while(!WindowShouldClose()) {
-
-		Color _color;
 
 		int camx = (int)camera.target.x;
 		int camy = (int)camera.target.y;
@@ -105,7 +143,7 @@ int main(void) {
 				if(Layer) {
 					DrawRectangle(AdjustedPos.x, AdjustedPos.y, 50, 50, colors[ActiveColor]);
 				} else {
-					DrawCircle(AdjustedPos.x + 25, AdjustedPos.y + 25, 25, colors[player+2]);
+					DrawCircle(AdjustedPos.x + 25, AdjustedPos.y + 25, 25, colors[player]);
 				}
 
 				for (int i = 0; i < MAX_TILES; i++) {
@@ -129,6 +167,20 @@ int main(void) {
 				rlPopMatrix();
 
 			EndMode2D();
+
+			if(Layer) {
+				//Tiles
+				GuiListView((Rectangle) { 660, 28, 104, 504}, "Erase;Floor;Goal", &ItemListScrollIndex, &ItemListActive);
+				ActiveColor = ItemListActive;
+			} else {
+				//Entities
+				GuiListView((Rectangle) { 660, 28, 104, 504}, "Erase;Player;Box", &ItemListScrollIndex, &ItemListActive);
+				player = ItemListActive;
+			}
+			if(GuiButton((Rectangle) { 652, 536, 120, 24 }, "Toggle Layer")) Layer = !Layer;
+			if(GuiButton((Rectangle) { 10, 58, 120, 24 }, "Quit")) shouldClose = true;
+			SaveButtonPressed = GuiButton((Rectangle) { 10, 28, 120, 24 }, "Save");
+
 			DrawText(TextFormat("Layer: %s", layerString), 0, 0, 24, WHITE);
 		EndDrawing();
 
@@ -155,31 +207,7 @@ int main(void) {
 		}
 
 		if(IsKeyPressed(KEY_S)) {
-			FILE *fptr;
-
-			fptr = fopen("map", "w");
-
-			for(int t = 0; t<MAX_TILES;t++){
-				Vector2 p = _tiles[t].position;
-				int f = _tiles[t].flag;
-				if(f != 0){
-					fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
-				}
-			}
-			fprintf(fptr, "ENTITIES\n");
-			for(int t = 0; t<MAX_ENTS;t++){
-				Vector2 p = _ents[t].position;
-				int f = _ents[t].player;
-				if(f != 0){
-					if(f == 1){
-						fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f);
-					}
-					else { 
-						fprintf(fptr, "%d, %d, %d\n", (int)(p.x/50), (int)(p.y/50), f+t-1);
-					}
-				}
-			}
-			fclose(fptr);
+			saveFile();
 		}
 
 		if(IsKeyPressed(KEY_E)) {
@@ -193,13 +221,15 @@ int main(void) {
 
 		//Tile placing code
 		//TODO make sure no overlaps
+		//TODO Can't delete the last object placed
+		//TODO Make sure clicking UI doesn't place an item
+		//TODO If you haven't selected anything in the UI you get weird junk data
 		if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 
 			if(Layer) {
 
 				int _flag;
 				
-				//delete tiles
 				if(ActiveColor == 0) {
 					for(int i = 0; i < MAX_TILES; i++) {
 						if(_tiles[i].position.x == AdjustedPos.x && _tiles[i].position.y == AdjustedPos.y) {
@@ -252,6 +282,7 @@ int main(void) {
 				}
 			}
 		}
+		if(shouldClose) break;
 	}
 
 	CloseWindow();
