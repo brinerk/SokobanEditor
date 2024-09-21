@@ -7,15 +7,17 @@ Left click to place tiles or entities, starts in entity mode with player entity 
 
 Hold right click and drag to pan the view.
 
-Be careful, mistakes cannot be undone, and do not try to replace a tile or entity, it will just place them both.
+Be careful, do not try to replace a tile or entity, it will just place them both.
 
 `t` tile mode
+`0` delete tiles
 `1` select green floor tiles
 `2` select red goal tiles
 
 `e` entity mode
 `p` select player entity
 `b` select box entity
+`d` delete entities
 
 `s` generates map file named map in directory
 
